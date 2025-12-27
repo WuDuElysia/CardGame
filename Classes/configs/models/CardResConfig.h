@@ -1,5 +1,5 @@
-#ifndef __CARD_RES_CONFIG_H
-#define __CARD_RES_CONFIG_H
+﻿#ifndef CARD_RES_CONFIG_H
+#define CARD_RES_CONFIG_H
 
 #include <string>
 #include <unordered_map>
@@ -11,6 +11,9 @@ public:
 	bool init();
 	std::string getCardFrontRes(CardFaceType face, CardSuitType suit) const;
 	std::string getCardBackRes() const;
+	std::string getEmptyStackRes() const;
+	std::string getFontRes() const;
+	std::string getUndoButtonRes() const;
 
 private:
 	CardResConfig();
@@ -19,6 +22,9 @@ private:
 
 	std::unordered_map<int, std::string> _cardFrontResMap;
 	std::string _cardBackRes;
+	std::string _emptyStackRes;
+	std::string _fontRes;
+	std::string _undoButtonRes;
 
 	int generateCardResId(CardFaceType face, CardSuitType suit) const;
 };

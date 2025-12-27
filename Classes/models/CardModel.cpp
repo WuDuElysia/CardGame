@@ -1,4 +1,4 @@
-#include "CardModel.h"
+﻿#include "CardModel.h"
 
 CardModel::CardModel()
 	: _cardId(0)
@@ -61,3 +61,4 @@ void CardModel::setClickable(bool clickable) {
 int CardModel::getCardValue() const {
 	return static_cast<int>(_cardFace);
 }
+

@@ -1,4 +1,4 @@
-#ifndef __LEVEL_CONFIG_H
+﻿#ifndef __LEVEL_CONFIG_H
 #define __LEVEL_CONFIG_H
 
 #include <vector>
@@ -32,3 +32,4 @@ private:
 };
 
 #endif
+

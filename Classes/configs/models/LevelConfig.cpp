@@ -1,4 +1,4 @@
-#include "LevelConfig.h"
+﻿#include "LevelConfig.h"
 
 LevelConfig::LevelConfig() : _levelId(0) {
 }
@@ -29,3 +29,4 @@ int LevelConfig::getLevelId() const {
 void LevelConfig::setLevelId(int levelId) {
 	_levelId = levelId;
 }
+

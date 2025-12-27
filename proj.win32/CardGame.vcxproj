@@ -154,11 +154,25 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClCompile Include="..\Classes\configs\loaders\LevelConfigLoader.cpp" />
     <ClCompile Include="..\Classes\configs\models\CardResConfig.cpp" />
     <ClCompile Include="..\Classes\configs\models\LevelConfig.cpp" />
+    <ClCompile Include="..\Classes\controllers\CardController.cpp" />
+    <ClCompile Include="..\Classes\controllers\GameController.cpp" />
+    <ClCompile Include="..\Classes\controllers\PlayFieldController.cpp" />
+    <ClCompile Include="..\Classes\controllers\StackController.cpp" />
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
+    <ClCompile Include="..\Classes\managers\CardStackManager.cpp" />
+    <ClCompile Include="..\Classes\managers\PlayFieldManager.cpp" />
+    <ClCompile Include="..\Classes\managers\UndoManager.cpp" />
     <ClCompile Include="..\Classes\models\CardEnums.cpp" />
     <ClCompile Include="..\Classes\models\CardModel.cpp" />
+    <ClCompile Include="..\Classes\models\GameModel.cpp" />
+    <ClCompile Include="..\Classes\models\UndoModel.cpp" />
+    <ClCompile Include="..\Classes\scenes\GameScene.cpp" />
+    <ClCompile Include="..\Classes\scenes\TitleScene.cpp" />
+    <ClCompile Include="..\Classes\services\CardMatchingService.cpp" />
     <ClCompile Include="..\Classes\views\CardView.cpp" />
+    <ClCompile Include="..\Classes\views\GameView.cpp" />
     <ClCompile Include="..\Classes\views\PlayFieldView.cpp" />
+    <ClCompile Include="..\Classes\views\StackView.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -166,11 +180,25 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClInclude Include="..\Classes\configs\loaders\LevelConfigLoader.h" />
     <ClInclude Include="..\Classes\configs\models\CardResConfig.h" />
     <ClInclude Include="..\Classes\configs\models\LevelConfig.h" />
+    <ClInclude Include="..\Classes\controllers\CardController.h" />
+    <ClInclude Include="..\Classes\controllers\GameController.h" />
+    <ClInclude Include="..\Classes\controllers\PlayFieldController.h" />
+    <ClInclude Include="..\Classes\controllers\StackController.h" />
     <ClInclude Include="..\Classes\HelloWorldScene.h" />
+    <ClInclude Include="..\Classes\managers\CardStackManager.h" />
+    <ClInclude Include="..\Classes\managers\PlayFieldManager.h" />
+    <ClInclude Include="..\Classes\managers\UndoManager.h" />
     <ClInclude Include="..\Classes\models\CardEnums.h" />
     <ClInclude Include="..\Classes\models\CardModel.h" />
+    <ClInclude Include="..\Classes\models\GameModel.h" />
+    <ClInclude Include="..\Classes\models\UndoModel.h" />
+    <ClInclude Include="..\Classes\scenes\GameScene.h" />
+    <ClInclude Include="..\Classes\scenes\TitleScene.h" />
+    <ClInclude Include="..\Classes\services\CardMatchingService.h" />
     <ClInclude Include="..\Classes\views\CardView.h" />
+    <ClInclude Include="..\Classes\views\GameView.h" />
     <ClInclude Include="..\Classes\views\PlayFieldView.h" />
+    <ClInclude Include="..\Classes\views\StackView.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>

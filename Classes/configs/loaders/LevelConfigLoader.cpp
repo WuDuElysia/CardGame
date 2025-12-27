@@ -7,14 +7,14 @@ USING_NS_CC;
 std::shared_ptr<LevelConfig> LevelConfigLoader::loadLevelConfig(int levelId) {
         std::string filePath = getLevelConfigFilePath(levelId);
 
-        // 读取配置文件
+        // 璇诲彇閰嶇疆鏂囦欢
         std::string jsonContent = FileUtils::getInstance()->getStringFromFile(filePath);
         if (jsonContent.empty()) {
                 CCLOG("Failed to load level config file: %s", filePath.c_str());
                 return nullptr;
         }
 
-        // 解析JSON
+        // 瑙ｆ瀽JSON
         rapidjson::Document document;
         document.Parse(jsonContent.c_str());
 
@@ -26,7 +26,7 @@ std::shared_ptr<LevelConfig> LevelConfigLoader::loadLevelConfig(int levelId) {
         std::shared_ptr<LevelConfig> levelConfig = std::make_shared<LevelConfig>();
         levelConfig->setLevelId(levelId);
 
-        // 解析游戏区域
+        // 瑙ｆ瀽娓告垙鍖哄煙
         if (document.HasMember("Playfield") && document["Playfield"].IsArray()) {
                 const rapidjson::Value& playfieldArray = document["Playfield"];
                 for (rapidjson::SizeType i = 0; i < playfieldArray.Size(); ++i) {
@@ -47,7 +47,7 @@ std::shared_ptr<LevelConfig> LevelConfigLoader::loadLevelConfig(int levelId) {
                 }
         }
 
-        // 解析牌堆区域
+        // 瑙ｆ瀽鐗屽爢鍖哄煙
         if (document.HasMember("Stack") && document["Stack"].IsArray()) {
                 const rapidjson::Value& stackArray = document["Stack"];
                 for (rapidjson::SizeType i = 0; i < stackArray.Size(); ++i) {
@@ -57,7 +57,7 @@ std::shared_ptr<LevelConfig> LevelConfigLoader::loadLevelConfig(int levelId) {
                                 cardConfig.cardFace = static_cast<CardFaceType>(cardObj["CardFace"].GetInt());
                                 cardConfig.cardSuit = static_cast<CardSuitType>(cardObj["CardSuit"].GetInt());
 
-                                // 牌堆卡牌位置由游戏管理器处理，默认为(0,0)
+                                // 鐗屽爢鍗＄墝浣嶇疆鐢辨父鎴忕鐞嗗櫒澶勭悊锛岄粯璁や负(0,0)
                                 cardConfig.position = Vec2::ZERO;
 
                                 levelConfig->addStackCard(cardConfig);
@@ -73,3 +73,4 @@ std::string LevelConfigLoader::getLevelConfigFilePath(int levelId) {
         sprintf(filePath, "res/levels/level_%d.json", levelId);
         return filePath;
 }
+

@@ -1,5 +1,5 @@
-#ifndef __CARDMODEL_H
-#define __CARDMODEL_H
+ï»¿#ifndef CARD_MODEL_H
+#define CARD_MODEL_H
 
 #include "CardEnums.h"
 #include "cocos2d.h"
@@ -10,24 +10,24 @@ public:
 	CardModel(int cardId, CardFaceType face, CardSuitType suit, const cocos2d::Vec2& position);
 	virtual ~CardModel();
 
-	int getCardId() const;              // »ñÈ¡¿¨ÅÆID
-	CardSuitType getCardSuit() const;   // »ñÈ¡¿¨ÅÆ»¨É«
-	CardFaceType getCardFace() const;   // »ñÈ¡¿¨ÅÆµãÊı
-	const cocos2d::Vec2& getPosition() const;  // »ñÈ¡¿¨ÅÆÎ»ÖÃ
-	void setPosition(const cocos2d::Vec2& position);  // ÉèÖÃ¿¨ÅÆÎ»ÖÃ
-	bool isFlipped() const;             // ÅĞ¶Ï¿¨ÅÆÊÇ·ñ·­¿ª
-	void setFlipped(bool flipped);      // ÉèÖÃ¿¨ÅÆ·­¿ª×´Ì¬
-	bool isClickable() const;           // ÅĞ¶Ï¿¨ÅÆÊÇ·ñ¿Éµã»÷
-	void setClickable(bool clickable);  // ÉèÖÃ¿¨ÅÆ¿Éµã»÷×´Ì¬
-	int getCardValue() const;           // »ñÈ¡¿¨ÅÆÊıÖµ£¨ÓÃÓÚÆ¥ÅäÅĞ¶Ï£©
+	int getCardId() const;              // è·å–å¡ç‰ŒID
+	CardSuitType getCardSuit() const;   // è·å–å¡ç‰ŒèŠ±è‰²
+	CardFaceType getCardFace() const;   // è·å–å¡ç‰Œç‚¹æ•°
+	const cocos2d::Vec2& getPosition() const;  // è·å–å¡ç‰Œä½ç½®
+	void setPosition(const cocos2d::Vec2& position);  // è®¾ç½®å¡ç‰Œä½ç½®
+	bool isFlipped() const;             // åˆ¤æ–­å¡ç‰Œæ˜¯å¦ç¿»å¼€
+	void setFlipped(bool flipped);      // è®¾ç½®å¡ç‰Œç¿»å¼€çŠ¶æ€
+	bool isClickable() const;           // åˆ¤æ–­å¡ç‰Œæ˜¯å¦å¯ç‚¹å‡»
+	void setClickable(bool clickable);  // è®¾ç½®å¡ç‰Œå¯ç‚¹å‡»çŠ¶æ€
+	int getCardValue() const;           // è·å–å¡ç‰Œæ•°å€¼ï¼ˆç”¨äºåŒ¹é…åˆ¤æ–­ï¼‰
 
 private:
 	int _cardId;
-	CardSuitType _cardSuit;		//¿¨ÅÆ»¨É«
-	CardFaceType _cardFace;		//¿¨ÅÆµãÊı
-	cocos2d::Vec2 _position;		//¿¨ÅÆÎ»ÖÃ
-	bool _isFlipped;	//ÅĞ¶Ï¿¨ÅÆÊÇ·ñ·­¿ª
-	bool _isClickable;	//ÅĞ¶Ï¿¨ÅÆÊÇ·ñ¿ÉÒÔµã»÷
+	CardSuitType _cardSuit;		// å¡ç‰ŒèŠ±è‰²
+	CardFaceType _cardFace;		// å¡ç‰Œç‚¹æ•°
+	cocos2d::Vec2 _position;		// å¡ç‰Œä½ç½®
+	bool _isFlipped;	// å¡ç‰Œæ˜¯å¦ç¿»å¼€
+	bool _isClickable;	// å¡ç‰Œæ˜¯å¦å¯ç‚¹å‡»
 };
 
 #endif

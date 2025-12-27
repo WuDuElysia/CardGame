@@ -1,4 +1,5 @@
 #include "CardResConfig.h"
+#include "cocos2d.h"
 
 CardResConfig* CardResConfig::_instance = nullptr;
 
@@ -17,8 +18,21 @@ CardResConfig* CardResConfig::getInstance() {
 }
 
 bool CardResConfig::init() {
-        // ÉèÖÃ¿¨ÅÆ±³Ãæ×ÊÔ´Â·¾¶
+        CCLOG("CardResConfig::init() called");
+        
+        // ç’å‰§ç–†é—ï¼„å¢é‘³å²„æ½°ç’§å‹¬ç°®ç’ºîˆšç·
         _cardBackRes = "res/res/card_general.png";
+        CCLOG("Card back res set to: %s", _cardBackRes.c_str());
+        
+        // ç’å‰§ç–†ç»Œè™¹å¢é«å—šç¥«å©§æ„¯çŸ¾å¯°?
+        _emptyStackRes = "res/empty_stack.png";
+        
+        // ç’å‰§ç–†ç€›æ¤¾ç¶‹ç’§å‹¬ç°®ç’ºîˆšç·
+        _fontRes = "fonts/arial.ttf";
+        CCLOG("Font res set to: %s", _fontRes.c_str());
+        
+        // ç’å‰§ç–†é¾ã‚‰æ”¢é¸å¤æŒ³ç’§å‹¬ç°®ç’ºîˆšç·
+        _undoButtonRes = "CloseNormal.png";
 
         for (int suitVal = static_cast<int>(CardSuitType::CST_DIAMONDS);
                 suitVal <= static_cast<int>(CardSuitType::CST_SPADES);
@@ -32,13 +46,13 @@ bool CardResConfig::init() {
                         CardSuitType suit = static_cast<CardSuitType>(suitVal);
                         int resId = generateCardResId(face, suit);
 
-                        // ÉèÖÃ¿¨ÅÆÕıÃæ×ÊÔ´Â·¾¶
-                        // ×ÊÔ´ÎÄ¼şÃüÃû¹æ·¶£ºbig_{ÑÕÉ«}_{µãÊı}.png
-                        // ÑÕÉ«: red(ºìÌÒ/·½¿é), black(ºÚÌÒ/Ã·»¨)
-                        // µãÊı: A, 2-10, J, Q, K
+                        // ç’å‰§ç–†å§£å¿“ç´¶å§ï½‰æ½°é—ï¼„å¢ç’§å‹¬ç°®ç’ºîˆšç·
+                        // ç’§å‹¬ç°®é‚å›¦æ¬¢é›è—‰æ‚•ç‘™å‹®å¯–é”›æ­œig_{æ£°æ»†å£Š}_{é—ˆãˆ â‚¬ç´.png
+                        // æ£°æ»†å£Š: red(é‚ç‘°æ½¡/ç»¾ãˆ¡î”ˆ), black(æ¦›æˆî”ˆ/å§Šå‘°å§³)
+                        // é—ˆãˆ â‚¬? A, 2-10, J, Q, K
                         char resPath[128];
 
-                        // È·¶¨»¨É«ÑÕÉ«
+                        // çº­î†¼ç•¾é—ï¼„å¢æ£°æ»†å£Š
                         const char* colorPrefix = "";
                         if (suitVal == static_cast<int>(CardSuitType::CST_DIAMONDS) ||
                                 suitVal == static_cast<int>(CardSuitType::CST_HEARTS)) {
@@ -48,7 +62,7 @@ bool CardResConfig::init() {
                                 colorPrefix = "black";
                         }
 
-                        // È·¶¨µãÊı×Ö·û´®
+                        // çº­î†¼ç•¾é—ˆãˆ â‚¬ç…ç“§ç»—ï¸¿è¦†
                         const char* faceStr = "";
                         switch (faceVal) {
                         case 1:  faceStr = "A"; break;
@@ -56,14 +70,13 @@ bool CardResConfig::init() {
                         case 12: faceStr = "Q"; break;
                         case 13: faceStr = "K"; break;
                         default: {
-                                // ½«Êı×Ö×ª»»Îª×Ö·û´®
                                 static char numStr[3];
                                 sprintf(numStr, "%d", faceVal);
                                 faceStr = numStr;
                         } break;
                         }
 
-                        // Éú³É×ÊÔ´Â·¾¶
+                        // é‹å‹«ç¼“ç’§å‹¬ç°®ç’ºîˆšç·
                         sprintf(resPath, "res/res/number/big_%s_%s.png", colorPrefix, faceStr);
                         _cardFrontResMap[resId] = resPath;
                 }
@@ -73,18 +86,34 @@ bool CardResConfig::init() {
 }
 
 std::string CardResConfig::getCardFrontRes(CardFaceType face, CardSuitType suit) const {
-        int resId = generateCardResId(face, suit);
+        // ä¿®å¤CardFace=0çš„æƒ…å†µï¼Œé»˜è®¤ä½¿ç”¨ACE
+        CardFaceType adjustedFace = (face == static_cast<CardFaceType>(0)) ? CardFaceType::CFT_ACE : face;
+        int resId = generateCardResId(adjustedFace, suit);
         auto it = _cardFrontResMap.find(resId);
         if (it != _cardFrontResMap.end()) {
                 return it->second;
         }
-        return "";
+        CCLOG("Failed to get card front res for face=%d, suit=%d", static_cast<int>(face), static_cast<int>(suit));
+        return _cardBackRes; // å¦‚æœæ‰¾ä¸åˆ°ï¼Œè¿”å›èƒŒé¢çº¹ç†
 }
 
 std::string CardResConfig::getCardBackRes() const {
         return _cardBackRes;
 }
 
+std::string CardResConfig::getEmptyStackRes() const {
+        return _emptyStackRes;
+}
+
+std::string CardResConfig::getFontRes() const {
+        return _fontRes;
+}
+
+std::string CardResConfig::getUndoButtonRes() const {
+        return _undoButtonRes;
+}
+
 int CardResConfig::generateCardResId(CardFaceType face, CardSuitType suit) const {
         return static_cast<int>(suit) * 100 + static_cast<int>(face);
 }
+

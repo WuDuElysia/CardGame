@@ -1,18 +1,21 @@
-#ifndef __CARDENUMS_H
-#define __CARDENUMS_H
+﻿#ifndef CARD_ENUMS_H
+#define CARD_ENUMS_H
 
+/**
+ * @file CardEnums.h
+ * @brief 卡牌枚举定义
+ */
 
-
-// ���ƻ�ɫö��
+ // 卡牌花色枚举
 enum class CardSuitType {
-	CST_DIAMONDS = 0,  // ����
-	CST_CLUBS,         // ÷��
-	CST_HEARTS,        // ����
-	CST_SPADES,        // ����
+	CST_DIAMONDS = 0,  // 方块
+	CST_CLUBS,         // 梅花
+	CST_HEARTS,        // 红桃
+	CST_SPADES,        // 黑桃
 	CST_MAX
 };
 
-// ���Ƶ���ö��
+// 卡牌点数枚举
 enum class CardFaceType {
 	CFT_ACE = 1,   // A
 	CFT_TWO,       // 2

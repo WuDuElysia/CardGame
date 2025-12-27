@@ -23,7 +23,7 @@
 # THE SOFTWARE.
 # ****************************************************************************/
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 
 set(APP_NAME TemplateCpp)
 
@@ -56,10 +56,52 @@ include_directories(
 list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
      Classes/HelloWorldScene.cpp
+     Classes/configs/loaders/LevelConfigLoader.cpp
+     Classes/configs/models/CardResConfig.cpp
+     Classes/configs/models/LevelConfig.cpp
+     Classes/controllers/CardController.cpp
+     Classes/controllers/GameController.cpp
+     Classes/controllers/PlayFieldController.cpp
+     Classes/controllers/StackController.cpp
+     Classes/managers/CardStackManager.cpp
+     Classes/managers/PlayFieldManager.cpp
+     Classes/managers/UndoManager.cpp
+     Classes/models/CardEnums.cpp
+     Classes/models/CardModel.cpp
+     Classes/models/GameModel.cpp
+     Classes/models/UndoModel.cpp
+     Classes/scenes/GameScene.cpp
+     Classes/scenes/TitleScene.cpp
+     Classes/services/CardMatchingService.cpp
+     Classes/views/CardView.cpp
+     Classes/views/GameView.cpp
+     Classes/views/PlayFieldView.cpp
+     Classes/views/StackView.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
      Classes/HelloWorldScene.h
+     Classes/configs/loaders/LevelConfigLoader.h
+     Classes/configs/models/CardResConfig.h
+     Classes/configs/models/LevelConfig.h
+     Classes/controllers/CardController.h
+     Classes/controllers/GameController.h
+     Classes/controllers/PlayFieldController.h
+     Classes/controllers/StackController.h
+     Classes/managers/CardStackManager.h
+     Classes/managers/PlayFieldManager.h
+     Classes/managers/UndoManager.h
+     Classes/models/CardEnums.h
+     Classes/models/CardModel.h
+     Classes/models/GameModel.h
+     Classes/models/UndoModel.h
+     Classes/scenes/GameScene.h
+     Classes/scenes/TitleScene.h
+     Classes/services/CardMatchingService.h
+     Classes/views/CardView.h
+     Classes/views/GameView.h
+     Classes/views/PlayFieldView.h
+     Classes/views/StackView.h
      )
 
 if(ANDROID)
