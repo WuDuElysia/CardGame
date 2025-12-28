@@ -35,6 +35,20 @@ bool GameScene::init() {
 		}
 	}
 
+	// 添加键盘事件监听器，绑定R键到撤销功能
+	auto keyboardListener = EventListenerKeyboard::create();
+	keyboardListener->onKeyReleased = [this](EventKeyboard::KeyCode keyCode, Event* event) {
+		if (keyCode == EventKeyboard::KeyCode::KEY_R) {
+			// 调用游戏控制器的撤销方法
+			if (_gameController) {
+				_gameController->undo();
+			}
+		}
+	};
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
+
 	return true;
 }
+
+
 

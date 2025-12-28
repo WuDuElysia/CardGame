@@ -85,6 +85,38 @@ CardModel* GameModel::getTrayCard() const {
         return _trayCards.back().get();
 }
 
+bool GameModel::moveTrayCardToPlayfield(int cardId) {
+    // 从trayCardMap中获取智能指针
+    auto it = _trayCardMap.find(cardId);
+    if (it == _trayCardMap.end()) {
+        CCLOG("Card not found in trayCardMap: %d", cardId);
+        return false;
+    }
+
+    // 移动智能指针所有权，避免removeTrayCard释放
+    auto cardPtr = std::move(it->second);
+    CardModel* card = cardPtr.get();
+
+    // 从底牌堆向量中移除
+    auto vecIter = std::find_if(_trayCards.begin(), _trayCards.end(), 
+        [cardId](const std::shared_ptr<CardModel>& c) { 
+            return c->getCardId() == cardId; 
+        });
+    
+    if (vecIter != _trayCards.end()) {
+        _trayCards.erase(vecIter);
+    }
+
+    // 添加回主牌区
+    _playfieldCards.push_back(std::move(cardPtr));
+    _playfieldCardMap[cardId] = _playfieldCards.back();
+    
+    CCLOG("Tray card moved to playfield: %d. Playfield cards count: %d, Tray cards count: %d", 
+        cardId, (int)_playfieldCards.size(), (int)_trayCards.size());
+    
+    return true;
+}
+
 const std::vector<std::shared_ptr<CardModel>>& GameModel::getStackCards() const {
 	return _stackCards;
 }
@@ -123,12 +155,16 @@ CardModel* GameModel::drawStackCard() {
 
 	CCLOG("Drawing card from stack. Before draw: Stack cards count = %d", (int)_stackCards.size());
 	
-	auto cardPtr = _stackCards.back();
-	_stackCards.pop_back();
-	_stackCardMap.erase(cardPtr->getCardId()); // 浠巑ap涓Щ闄?
+	// 获取顶部卡牌的智能指针引用
+	auto& cardPtr = _stackCards.back();
+	CardModel* card = cardPtr.get();
+	
+	// 直接返回卡牌指针，不立即移除智能指针
+	// 注意：这个函数不能单独调用，必须与replaceTrayWithStackCard配合使用
+	// 因为智能指针的释放需要在replaceTrayWithStackCard中处理
 
-	CCLOG("After draw: Stack cards count = %d", (int)_stackCards.size());
-	return cardPtr.get();
+	CCLOG("After draw: Stack cards count = %d (未立即移除，将在replaceTrayWithStackCard中处理)", (int)_stackCards.size());
+	return card;
 }
 
 bool GameModel::isStackEmpty() const {
@@ -147,13 +183,29 @@ bool GameModel::matchCard(CardModel* card) {
 		return false;
 	}
 
+	if (!card) {
+		CCLOG("Invalid card pointer in matchCard");
+		return false;
+	}
+
+	int cardId = card->getCardId();
+
+	// 从playfieldCardMap中获取智能指针，避免双重释放
+	auto it = _playfieldCardMap.find(cardId);
+	if (it == _playfieldCardMap.end()) {
+		CCLOG("Card not found in playfieldCardMap: %d", cardId);
+		return false;
+	}
+
+	// 移动智能指针所有权，避免removePlayfieldCard释放
+	auto cardPtr = std::move(it->second);
+
 	// 浠庢父鎴忓尯鍩熺Щ闄よ鐗?
-	removePlayfieldCard(card->getCardId());
+	removePlayfieldCard(cardId);
 
 	// 鏇存柊搴曠墝锛屽皢褰撳墠鍗＄墝娣诲姞鍒板簳鐗屽爢
-	auto cardPtr = std::shared_ptr<CardModel>(card);
-	_trayCards.push_back(cardPtr);
-	_trayCardMap[card->getCardId()] = cardPtr;
+	_trayCards.push_back(std::move(cardPtr));
+	_trayCardMap[cardId] = _trayCards.back();
 
 	// 澧炲姞鍒嗘暟鍜屾鏁?
 	_score += 10;
@@ -174,16 +226,26 @@ bool GameModel::replaceTrayWithStackCard() {
 	CCLOG("Replacing tray with stack card. Before: Stack count = %d, Tray count = %d", 
 		(int)_stackCards.size(), (int)_trayCards.size());
 	
-	CardModel* newTrayCard = drawStackCard();
-	if (newTrayCard == nullptr) {
+	if (_stackCards.empty()) {
 		CCLOG("Failed to replace tray: stack is empty");
 		return false;
 	}
 
-	// 灏嗘柊搴曠墝娣诲姞鍒板簳鐗屽爢
-	auto cardPtr = std::shared_ptr<CardModel>(newTrayCard);
-	_trayCards.push_back(cardPtr);
-	_trayCardMap[newTrayCard->getCardId()] = cardPtr;
+	// 直接转移智能指针的所有权，不释放CardModel对象
+	// 获取栈顶卡牌的智能指针
+	auto cardPtr = std::move(_stackCards.back());
+	CardModel* newTrayCard = cardPtr.get();
+	int cardId = newTrayCard->getCardId();
+	
+	// 从栈牌map中移除
+	_stackCardMap.erase(cardId);
+	
+	// 从栈牌vector中移除
+	_stackCards.pop_back();
+	
+	// 将智能指针转移到底牌堆，保持CardModel对象的生命周期
+	_trayCards.push_back(std::move(cardPtr));
+	_trayCardMap[cardId] = _trayCards.back();
 
 	// 澧炲姞姝ユ暟
 	incrementMoveCount();
@@ -243,4 +305,5 @@ int GameModel::getMoveCount() const {
 void GameModel::incrementMoveCount() {
 	_moveCount++;
 }
+
 

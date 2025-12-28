@@ -8,7 +8,8 @@ PlayFieldView* PlayFieldView::create() {
 	if (pRet && pRet->init()) {
 		pRet->autorelease();
 		return pRet;
-	} else {
+	}
+	else {
 		delete pRet;
 		pRet = nullptr;
 		return nullptr;
@@ -20,24 +21,26 @@ bool PlayFieldView::init() {
 		return false;
 	}
 
-	// 鍒濆鍖栨垚鍛樺彉閲?
+	// 初始化成员变量
 	_stackBasePosition = Vec2::ZERO;
 	_stackOffset = 20.0f;
 	_topCardVisible = true;
 	_emptyStateSprite = nullptr;
 	_emptyStateLabel = nullptr;
 
-	// 设置主牌区尺寸为1080*1500
-	setContentSize(Size(1080, 1500));
+	// 设置锚点为左下角，确保位置计算正确
+	setAnchorPoint(Vec2(0, 0));
+	// 尺寸由GameView控制，不硬编码
+	setContentSize(Size(1080, 920)); // 默认值，会被GameView覆盖
 
-	// 娉ㄥ唽瑙︽懜浜嬩欢
+	// 注册触摸事件
 	auto touchListener = EventListenerTouchOneByOne::create();
 	touchListener->setSwallowTouches(true);
 	touchListener->onTouchBegan = CC_CALLBACK_2(PlayFieldView::onTouchBegan, this);
 	touchListener->onTouchEnded = CC_CALLBACK_2(PlayFieldView::onTouchEnded, this);
 	Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, this);
 
-	// 娉ㄥ唽榧犳爣浜嬩欢
+	// 注册鼠标事件
 	auto mouseListener = EventListenerMouse::create();
 	mouseListener->onMouseDown = CC_CALLBACK_1(PlayFieldView::onMouseDown, this);
 	Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(mouseListener, this);
@@ -66,7 +69,12 @@ void PlayFieldView::removeCardView(CardView* cardView) {
 void PlayFieldView::removeCardViewByCardId(int cardId) {
 	auto it = _cardViews.begin();
 	while (it != _cardViews.end()) {
-		if ((*it)->getCardModel() && (*it)->getCardModel()->getCardId() == cardId) {
+		bool match = false;
+		if ((*it)->getCardModel()) {
+			match = ((*it)->getCardModel()->getCardId() == cardId);
+		}
+
+		if (match) {
 			this->removeChild(*it);
 			it = _cardViews.erase(it);
 			updateStackDisplay();
@@ -74,6 +82,10 @@ void PlayFieldView::removeCardViewByCardId(int cardId) {
 		}
 		++it;
 	}
+
+	// 如果没找到匹配的CardView，强制更新显示
+	CCLOG("Warning: Could not find CardView with cardId %d, updating display anyway", cardId);
+	updateStackDisplay();
 }
 
 CardView* PlayFieldView::getCardViewByCardId(int cardId) const {
@@ -130,24 +142,26 @@ void PlayFieldView::setCardStackPosition(const Vec2& basePosition, float offset)
 }
 
 void PlayFieldView::updateStackDisplay() {
-	// 鏇存柊鍗＄墝鍫嗗彔鏄剧ず
+	// 更新卡牌显示，使用CardModel中的原始位置
 	for (size_t i = 0; i < _cardViews.size(); ++i) {
 		auto cardView = _cardViews[i];
-		Vec2 position = _stackBasePosition + Vec2(0, i * _stackOffset);
+		if (!cardView->getCardModel()) continue;
 
-		// 鍙湁鏈€椤跺眰鍗＄墝鍙锛屽叾浠栧崱鐗岄儴鍒嗗彲瑙?
-		if (i == _cardViews.size() - 1) {
-			cardView->setVisible(_topCardVisible);
-		}
-		else {
-			cardView->setVisible(true);
-		}
+		// 获取CardModel中的原始位置
+		Vec2 originalPosition = cardView->getCardModel()->getPosition();
 
-		// 鏇存柊浣嶇疆
-		cardView->setPosition(position);
+		// 设置卡牌位置为原始位置，加上200的垂直偏移量，让所有卡牌往上移动
+		cardView->setPosition(originalPosition + Vec2(0, 200));
+
+		// 根据CardModel中的实际状态设置翻转状态，而不是根据位置
+		cardView->setFlipped(cardView->getCardModel()->isFlipped());
+
+		// 确保所有卡牌都可见
+		cardView->setVisible(true);
+		cardView->setFlipped(true);
 	}
 
-	// 鏇存柊绌虹姸鎬佹樉绀?
+	// 更新空状态显示
 	setEmptyStateVisible(_cardViews.empty());
 }
 
@@ -159,16 +173,16 @@ void PlayFieldView::setTopCardVisible(bool visible) {
 }
 
 void PlayFieldView::setEmptyStateVisible(bool visible) {
-	// 濡傛灉闇€瑕佹樉绀虹┖鐘舵€侊紝浣嗗皻鏈垱寤虹┖鐘舵€佹樉绀?
+	// 如果需要显示空状态，但尚未创建空状态显示
 	if (visible && !_emptyStateSprite) {
-		// 鍒涘缓绌虹姸鎬佺簿鐏?
+		// 创建空状态精灵
 		_emptyStateSprite = Sprite::create(CardResConfig::getInstance()->getEmptyStackRes());
 		if (_emptyStateSprite) {
 			_emptyStateSprite->setPosition(_stackBasePosition);
 			this->addChild(_emptyStateSprite, -1);
 		}
 
-		// 鍒涘缓绌虹姸鎬佹爣绛?
+		// 创建空状态标签
 		TTFConfig ttfConfig;
 		ttfConfig.fontFilePath = CardResConfig::getInstance()->getFontRes();
 		ttfConfig.fontSize = 24;
@@ -185,7 +199,7 @@ void PlayFieldView::setEmptyStateVisible(bool visible) {
 		}
 	}
 
-	// 璁剧疆绌虹姸鎬佸彲瑙佹€?
+	// 设置空状态可见性
 	if (_emptyStateSprite) {
 		_emptyStateSprite->setVisible(visible);
 	}
@@ -234,15 +248,35 @@ void PlayFieldView::onTouchEnded(Touch* touch, Event* event) {
 }
 
 CardView* PlayFieldView::findCardAtPosition(const Vec2& pos) const {
-	// 浠庡悗寰€鍓嶉亶鍘嗭紝纭繚鐐瑰嚮妫€娴嬬殑姝ｇ‘鎬?
+	// 将全局坐标转换为PlayFieldView的本地坐标
+	Vec2 localPos = this->convertToNodeSpace(pos);
+
+	// 从后往前遍历卡牌，确保返回的是最上层的卡牌
+	// 卡牌是按添加顺序存储的，最后添加的在最上层
 	for (auto it = _cardViews.rbegin(); it != _cardViews.rend(); ++it) {
 		CardView* cardView = *it;
-		auto bounds = cardView->getBoundingBox();
-		// 由于游戏区域视图位置是(0,0)，不需要转换触摸位置
-		if (bounds.containsPoint(pos)) {
-			return cardView;
+		// 检查CardView是否有效
+		if (cardView) {
+			auto bounds = cardView->getBoundingBox();
+			// 使用本地坐标进行碰撞检测
+			if (bounds.containsPoint(localPos)) {
+				return cardView;
+			}
 		}
 	}
 	return nullptr;
 }
+
+void PlayFieldView::clearAllCardViews() {
+	// 从父节点移除所有卡牌视图
+	for (auto cardView : _cardViews) {
+		if (cardView->getParent() == this) {
+			cardView->removeFromParent();
+		}
+	}
+
+	// 清空卡牌视图列表
+	_cardViews.clear();
+}
+
 

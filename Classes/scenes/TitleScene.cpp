@@ -46,3 +46,4 @@ void TitleScene::onStartGameButtonClick(cocos2d::Ref* pSender) {
 	auto scene = GameScene::createScene();
 	Director::getInstance()->replaceScene(TransitionFade::create(0.5, scene));
 }
+

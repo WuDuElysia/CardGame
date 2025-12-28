@@ -1,4 +1,4 @@
-﻿#include "CardModel.h"
+#include "CardModel.h"
 
 CardModel::CardModel()
 	: _cardId(0)
@@ -16,6 +16,15 @@ CardModel::CardModel(int cardId, CardFaceType face, CardSuitType suit, const coc
 	, _position(position)
 	, _isFlipped(false)
 	, _isClickable(true) {
+}
+
+CardModel::CardModel(const CardModel& other)
+    : _cardId(other._cardId)
+    , _cardSuit(other._cardSuit)
+    , _cardFace(other._cardFace)
+    , _position(other._position)
+    , _isFlipped(other._isFlipped)
+    , _isClickable(other._isClickable) {
 }
 
 CardModel::~CardModel()
@@ -61,4 +70,6 @@ void CardModel::setClickable(bool clickable) {
 int CardModel::getCardValue() const {
 	return static_cast<int>(_cardFace);
 }
+
+
 

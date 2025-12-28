@@ -162,7 +162,6 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y
     <ClCompile Include="..\Classes\managers\CardStackManager.cpp" />
     <ClCompile Include="..\Classes\managers\PlayFieldManager.cpp" />
     <ClCompile Include="..\Classes\managers\UndoManager.cpp" />
-    <ClCompile Include="..\Classes\models\CardEnums.cpp" />
     <ClCompile Include="..\Classes\models\CardModel.cpp" />
     <ClCompile Include="..\Classes\models\GameModel.cpp" />
     <ClCompile Include="..\Classes\models\UndoModel.cpp" />

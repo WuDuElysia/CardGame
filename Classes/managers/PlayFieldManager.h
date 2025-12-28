@@ -61,7 +61,8 @@ public:
     bool isPlayFieldEmpty() const;
     
 private:
-    GameModel* _gameModel;  // 游戏模型指针
+    GameModel* _gameModel;  ///< 游戏模型指针
 };
 
 #endif // __PLAY_FIELD_MANAGER_H__
+

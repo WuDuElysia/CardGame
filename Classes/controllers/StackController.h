@@ -62,11 +62,17 @@ public:
      */
     void setUndoManager(UndoManager* undoManager);
     
+    /**
+     * @brief 重新初始化UI，用于撤销操作后更新UI
+     */
+    void reinitUI();
+    
 private:
-    GameModel* _gameModel;             // 游戏模型指针
-    StackView* _stackView;             // 牌堆视图指针
-    UndoManager* _undoManager;         // 撤销管理器指针
-    CardStackManager* _cardStackManager;  // 牌堆管理器指针
+    GameModel* _gameModel;             ///< 游戏模型指针
+    StackView* _stackView;             ///< 牌堆视图指针
+    UndoManager* _undoManager;         ///< 撤销管理器指针
+    CardStackManager* _cardStackManager;  ///< 牌堆管理器指针
 };
 
 #endif // __STACK_CONTROLLER_H__
+

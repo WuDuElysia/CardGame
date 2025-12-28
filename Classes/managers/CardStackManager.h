@@ -65,7 +65,8 @@ public:
     int getStackCardCount() const;
     
 private:
-    GameModel* _gameModel;  // 游戏模型指针
+    GameModel* _gameModel;  ///< 游戏模型指针
 };
 
 #endif // __CARD_STACK_MANAGER_H__
+

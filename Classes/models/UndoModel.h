@@ -1,4 +1,4 @@
-﻿#ifndef UNDO_MODEL_H
+#ifndef UNDO_MODEL_H
 #define UNDO_MODEL_H
 
 #include "cocos2d.h"
@@ -135,16 +135,17 @@ public:
     int getNewStackCardCount() const;
 
 private:
-    std::string _actionType;       // 操作类型
-    int _cardId;                   // 操作涉及的卡牌ID
-    cocos2d::Vec2 _fromPosition;   // 卡牌原始位置
-    cocos2d::Vec2 _toPosition;     // 卡牌目标位置
-    CardSuitType _oldSuit;         // 操作前的卡牌花色
-    CardFaceType _oldFace;         // 操作前的卡牌点数
-    CardSuitType _newSuit;         // 操作后的卡牌花色
-    CardFaceType _newFace;         // 操作后的卡牌点数
-    int _oldStackCardCount;        // 操作前的牌堆卡牌数量
-    int _newStackCardCount;        // 操作后的牌堆卡牌数量
+    std::string _actionType;       ///< 操作类型
+    int _cardId;                   ///< 操作涉及的卡牌ID
+    cocos2d::Vec2 _fromPosition;   ///< 卡牌原始位置
+    cocos2d::Vec2 _toPosition;     ///< 卡牌目标位置
+    CardSuitType _oldSuit;         ///< 操作前的卡牌花色
+    CardFaceType _oldFace;         ///< 操作前的卡牌点数
+    CardSuitType _newSuit;         ///< 操作后的卡牌花色
+    CardFaceType _newFace;         ///< 操作后的卡牌点数
+    int _oldStackCardCount;        ///< 操作前的牌堆卡牌数量
+    int _newStackCardCount;        ///< 操作后的牌堆卡牌数量
 };
 
 #endif // __UNDO_MODEL_H__
+

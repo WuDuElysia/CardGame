@@ -74,3 +74,4 @@ bool PlayFieldManager::isPlayFieldEmpty() const {
     
     return _gameModel->getPlayfieldCards().empty();
 }
+

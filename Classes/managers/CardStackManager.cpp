@@ -1,4 +1,4 @@
-﻿#include "CardStackManager.h"
+#include "CardStackManager.h"
 
 CardStackManager::CardStackManager() {
     _gameModel = nullptr;

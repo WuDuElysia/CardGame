@@ -16,7 +16,7 @@ StackController::~StackController() {
 }
 
 bool StackController::init() {
-	// 鍒濆鍖栫墝鍫嗙鐞嗗櫒
+	// 初始化牌堆管理器
 	_cardStackManager = new CardStackManager();
 	if (!_cardStackManager->init(_gameModel)) {
 		delete _cardStackManager;
@@ -24,38 +24,41 @@ bool StackController::init() {
 		return false;
 	}
 
-	// 娉ㄥ唽鐗屽爢鐐瑰嚮鍥炶皟
+	// 注册牌堆点击回调
 	if (_stackView) {
 		_stackView->setStackClickCallback([this]() {
 			this->handleStackClick();
 			});
 
-		// 娉ㄥ唽搴曠墝鐐瑰嚮鍥炶皟
+		// 注册底牌点击回调
 		_stackView->setTrayClickCallback([this](int cardId) {
 			this->handleTrayClick(cardId);
 			});
 
-		// 灏嗘ā鍨嬭〃鐗屽爢鏁版嵁鏇存柊鍒版樉绀轰腑
+		// 先清空现有的牌堆卡牌
+		_stackView->clearAllStackCards();
+		
+		// 根据GameModel的最新数据重新创建牌堆卡牌
 		const auto& stackCards = _gameModel->getStackCards();
 		for (const auto& cardModel : stackCards) {
 			auto cardView = CardView::create(cardModel.get());
 			if (cardView) {
-				cardView->setFlipped(false);
+				cardView->setFlipped(true);
 
-				// 娣诲姞鍒扮墝鍫嗙粯璁ゅ紑寮€
+				// 添加到牌堆，默认打开
 				_stackView->addStackCard(cardView);
 			}
 		}
 
-		// 灏嗘ā鍨嬭〃搴曠墝鏁版嵁鏇存柊鍒版樉绀轰腑
+		// 根据GameModel的最新数据重新创建底牌
 		CardModel* trayCard = _gameModel->getTrayCard();
 		if (trayCard) {
 			auto cardView = CardView::create(trayCard);
 			if (cardView) {
-				// 灏嗘崱鐗囪繘琛岄粯璁ゅ紑寮?
+				// 将卡牌进行默认打开
 				cardView->setFlipped(true);
 
-				// 璁剧疆搴曠墝
+				// 设置底牌
 				_stackView->setTrayCard(cardView);
 			}
 		}
@@ -64,16 +67,31 @@ bool StackController::init() {
 	return true;
 }
 
+// 新增方法：重新初始化UI，用于撤销操作后更新UI
+void StackController::reinitUI() {
+	// 先销毁现有的StackController
+	if (_cardStackManager) {
+		delete _cardStackManager;
+		_cardStackManager = nullptr;
+	}
+
+	// 重新初始化
+	init();
+}
+
 bool StackController::handleStackClick() {
 	// 璁板綍鎾ら攢鎿嶄綔
 	if (_undoManager) {
 		UndoModel undoAction;
 		undoAction.setActionType("replaceTray");
 
-		// 璁板綍褰撳墠搴曠墝淇℃伅
+		// 璁板綍褰撳墠搴曠墝淇℃伅（初始状态下底牌可能为空）
 		CardModel* currentTrayCard = _cardStackManager->getCurrentTrayCard();
 		if (currentTrayCard) {
 			undoAction.setCardId(currentTrayCard->getCardId());
+		} else {
+			// 初始状态下底牌为空，设置特殊标识
+			undoAction.setCardId(-1); // 表示空底牌
 		}
 
 		// 璁板綍褰撳墠鐗屽爢鏁伴噺
@@ -87,6 +105,9 @@ bool StackController::handleStackClick() {
 	
 	// 鏇存柊瑙嗗浘
 	if (_stackView && result) {
+		// 从StackView中移除顶部卡牌
+		_stackView->removeTopStackCard();
+		
 		_stackView->playDrawCardAnimation();
 		_stackView->updateStackDisplay();
 		
@@ -130,5 +151,6 @@ bool StackController::isStackEmpty() const {
 void StackController::setUndoManager(UndoManager* undoManager) {
 	_undoManager = undoManager;
 }
+
 
 

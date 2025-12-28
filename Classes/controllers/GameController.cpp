@@ -1,4 +1,4 @@
-#include "GameController.h"
+﻿#include "GameController.h"
 #include "configs/loaders/LevelConfigLoader.h"
 #include "services/CardMatchingService.h"
 
@@ -36,7 +36,7 @@ GameController::~GameController() {
 }
 
 bool GameController::init() {
-	// 鍒涘缓娓告垙妯″瀷
+	// 创建游戏模型
 	_gameModel = new GameModel();
 	if (!_gameModel->init()) {
 		delete _gameModel;
@@ -44,7 +44,7 @@ bool GameController::init() {
 		return false;
 	}
 
-	// 鍒濆鍖栨挙閿€绠＄悊鍣?
+	// 初始化撤销管理器
 	if (!initUndoManager()) {
 		return false;
 	}
@@ -63,8 +63,8 @@ bool GameController::startGame(int levelId) {
 
 	// 打印当前牌堆里的卡牌数量
 	if (_gameModel) {
-		CCLOG("Game started: playfield cards count = %d, stack cards count = %d", 
-			(int)_gameModel->getPlayfieldCards().size(), 
+		CCLOG("Game started: playfield cards count = %d, stack cards count = %d",
+			(int)_gameModel->getPlayfieldCards().size(),
 			(int)_gameModel->getStackCards().size());
 	}
 
@@ -113,10 +113,22 @@ bool GameController::undo() {
 
 	bool result = _undoManager->undo();
 
-	// 鏇存柊瑙嗗浘
-	if (_gameView && result) {
-		// 瑙﹀彂瑙嗗浘鏇存柊
-		_gameView->updateGameUI();
+	// 重新初始化UI，根据GameModel的最新数据
+	if (result) {
+		// 重新初始化主牌区UI
+		if (_playFieldController) {
+			_playFieldController->reinitUI();
+		}
+
+		// 重新初始化牌堆区UI
+		if (_stackController) {
+			_stackController->reinitUI();
+		}
+
+		// 更新游戏UI
+		if (_gameView) {
+			_gameView->updateGameUI();
+		}
 	}
 
 	return result;
@@ -124,6 +136,13 @@ bool GameController::undo() {
 
 void GameController::setGameView(GameView* gameView) {
 	_gameView = gameView;
+
+	// 设置撤销按钮回调
+	if (_gameView) {
+		_gameView->setUndoButtonClickCallback([this]() {
+			this->undo();
+			});
+	}
 
 	// 濡傛灉瀛愭帶鍒跺櫒宸茬粡鍒濆鍖栵紝璁剧疆鍏惰鍥?
 	if (_playFieldController && _gameView->getPlayFieldView()) {
@@ -153,8 +172,8 @@ UndoManager* GameController::getUndoManager() const {
 
 bool GameController::initControllers() {
 	// 鍒濆鍖栦富鐗屽尯鎺у埗鍣?
-	if (_gameView && _gameView->getPlayFieldView()) {
-		_playFieldController = new PlayFieldController(_gameModel, _gameView->getPlayFieldView());
+	if (_gameView && _gameView->getPlayFieldView() && _gameView->getStackView()) {
+		_playFieldController = new PlayFieldController(_gameModel, _gameView->getPlayFieldView(), _gameView->getStackView());
 		if (!_playFieldController->init()) {
 			delete _playFieldController;
 			_playFieldController = nullptr;
@@ -199,20 +218,20 @@ bool GameController::loadLevel(int levelId) {
 		CCLOG("Failed to load level config for level: %d", levelId);
 		return false;
 	}
-	
+
 	// 鏍规嵁閰嶇疆鍒濆鍖栨父鎴忔ā鍨嬬殑鍗＄墝
 	if (_gameModel) {
 		// 闃叉鍏冲崱鏁版嵁涓己鏈夊崱鐗?
 		// _gameModel->clearAllCards();
-		
+
 		static int cardIdCounter = 1; // 用于生成唯一卡牌ID
-		
+
 		// 打印加载前的卡牌数量
-		CCLOG("Before loading level %d: playfield cards count = %d, stack cards count = %d", 
-			levelId, 
-			(int)_gameModel->getPlayfieldCards().size(), 
+		CCLOG("Before loading level %d: playfield cards count = %d, stack cards count = %d",
+			levelId,
+			(int)_gameModel->getPlayfieldCards().size(),
 			(int)_gameModel->getStackCards().size());
-		
+
 		// 娣诲姞涓荤墝鍖虹墝鐗?
 		const auto& playfieldCards = levelConfig->getPlayfieldCards();
 		CCLOG("Loading %d playfield cards from level config", (int)playfieldCards.size());
@@ -222,7 +241,7 @@ bool GameController::loadLevel(int levelId) {
 			card->setClickable(true);
 			_gameModel->addPlayfieldCard(card);
 		}
-		
+
 		// 娣诲姞鐗屽爢鍗＄墝
 		const auto& stackCards = levelConfig->getStackCards();
 		CCLOG("Loading %d stack cards from level config", (int)stackCards.size());
@@ -231,21 +250,22 @@ bool GameController::loadLevel(int levelId) {
 			CardModel* card = new CardModel(cardIdCounter++, cardConfig.cardFace, cardConfig.cardSuit, cardConfig.position);
 			_gameModel->addStackCard(card);
 		}
-		
+
 		// 璁剧疆绗竴寮犲崱鐗?
 		if (_gameModel->getStackCards().size() > 0) {
-			// 浠庣墝鍫嗘彁鍗犱竴寮犲崱鐗?
-			// _gameModel->popStackCardToTray();
+			// 浠庣墝鍫嗘彁鍗犱竴寮犲崱鐗?浣滀负鍒濇搴曠墝
+			_gameModel->replaceTrayWithStackCard();
 		}
-		
+
 		// 打印加载后的卡牌数量
-		CCLOG("After loading level %d: playfield cards count = %d, stack cards count = %d", 
-			levelId, 
-			(int)_gameModel->getPlayfieldCards().size(), 
+		CCLOG("After loading level %d: playfield cards count = %d, stack cards count = %d",
+			levelId,
+			(int)_gameModel->getPlayfieldCards().size(),
 			(int)_gameModel->getStackCards().size());
 	}
 
 	return true;
 }
+
 
 

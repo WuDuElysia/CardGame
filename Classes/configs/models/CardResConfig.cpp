@@ -20,18 +20,18 @@ CardResConfig* CardResConfig::getInstance() {
 bool CardResConfig::init() {
         CCLOG("CardResConfig::init() called");
         
-        // 璁剧疆鍗＄墝鑳岄潰璧勬簮璺緞
+        // 设置卡牌背面资源路径
         _cardBackRes = "res/res/card_general.png";
         CCLOG("Card back res set to: %s", _cardBackRes.c_str());
         
-        // 璁剧疆绌虹墝鍫嗚祫婧愯矾寰?
+        // 设置空牌堆资源路径
         _emptyStackRes = "res/empty_stack.png";
         
-        // 璁剧疆瀛椾綋璧勬簮璺緞
+        // 设置字体资源路径
         _fontRes = "fonts/arial.ttf";
         CCLOG("Font res set to: %s", _fontRes.c_str());
         
-        // 璁剧疆鎾ら攢鎸夐挳璧勬簮璺緞
+        // 设置撤销按钮资源路径
         _undoButtonRes = "CloseNormal.png";
 
         for (int suitVal = static_cast<int>(CardSuitType::CST_DIAMONDS);
@@ -46,13 +46,13 @@ bool CardResConfig::init() {
                         CardSuitType suit = static_cast<CardSuitType>(suitVal);
                         int resId = generateCardResId(face, suit);
 
-                        // 璁剧疆姣忓紶姝ｉ潰鍗＄墝璧勬簮璺緞
-                        // 璧勬簮鏂囦欢鍛藉悕瑙勮寖锛歜ig_{棰滆壊}_{闈㈠€紏.png
-                        // 棰滆壊: red(鏂瑰潡/绾㈡), black(榛戞/姊呰姳)
-                        // 闈㈠€? A, 2-10, J, Q, K
+                        // 设置每种正面卡牌资源路径
+                        // 资源文件命名规则: big_{颜色}_{面值}.png
+                        // 颜色: red(方块/红桃), black(黑桃/梅花)
+                        // 面值: A, 2-10, J, Q, K
                         char resPath[128];
 
-                        // 纭畾鍗＄墝棰滆壊
+                        // 确定卡牌颜色
                         const char* colorPrefix = "";
                         if (suitVal == static_cast<int>(CardSuitType::CST_DIAMONDS) ||
                                 suitVal == static_cast<int>(CardSuitType::CST_HEARTS)) {
@@ -62,7 +62,7 @@ bool CardResConfig::init() {
                                 colorPrefix = "black";
                         }
 
-                        // 纭畾闈㈠€煎瓧绗︿覆
+                        // 确定面值字符串
                         const char* faceStr = "";
                         switch (faceVal) {
                         case 1:  faceStr = "A"; break;
@@ -76,7 +76,7 @@ bool CardResConfig::init() {
                         } break;
                         }
 
-                        // 鏋勫缓璧勬簮璺緞
+                        // 构建资源路径
                         sprintf(resPath, "res/res/number/big_%s_%s.png", colorPrefix, faceStr);
                         _cardFrontResMap[resId] = resPath;
                 }
@@ -116,4 +116,5 @@ std::string CardResConfig::getUndoButtonRes() const {
 int CardResConfig::generateCardResId(CardFaceType face, CardSuitType suit) const {
         return static_cast<int>(suit) * 100 + static_cast<int>(face);
 }
+
 

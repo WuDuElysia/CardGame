@@ -1,11 +1,13 @@
 #include "PlayFieldController.h"
 #include "managers/PlayFieldManager.h"
+#include "views/StackView.h"
 #include "managers/CardStackManager.h"
 #include "models/UndoModel.h"
 
-PlayFieldController::PlayFieldController(GameModel* gameModel, PlayFieldView* playFieldView)
+PlayFieldController::PlayFieldController(GameModel* gameModel, PlayFieldView* playFieldView, StackView* stackView)
 	: _gameModel(gameModel)
 	, _playFieldView(playFieldView)
+	, _stackView(stackView)
 	, _undoManager(nullptr)
 	, _playFieldManager(nullptr)
 	, _cardStackManager(nullptr) {
@@ -24,7 +26,7 @@ PlayFieldController::~PlayFieldController() {
 }
 
 bool PlayFieldController::init() {
-	// 鍒濆鍖栦富鐗屽尯绠＄悊鍣?
+	// 初始化主牌区管理器
 	_playFieldManager = new PlayFieldManager();
 	if (!_playFieldManager->init(_gameModel)) {
 		delete _playFieldManager;
@@ -32,7 +34,7 @@ bool PlayFieldController::init() {
 		return false;
 	}
 
-	// 鍒濆鍖栫墝鍫嗙鐞嗗櫒
+	// 初始化牌堆管理器
 	_cardStackManager = new CardStackManager();
 	if (!_cardStackManager->init(_gameModel)) {
 		delete _cardStackManager;
@@ -45,7 +47,7 @@ bool PlayFieldController::init() {
 		_playFieldView->setCardClickCallback([this](int cardId) {
 			this->handleCardClick(cardId);
 			});
-		
+
 		// 将GameModel中的卡牌数据同步到视图中
 		const auto& playfieldCards = _gameModel->getPlayfieldCards();
 		for (const auto& cardModel : playfieldCards) {
@@ -54,10 +56,10 @@ bool PlayFieldController::init() {
 			if (cardView) {
 				// 将卡牌视图添加到游戏区域视图中
 				_playFieldView->addCardView(cardView);
-				
-				// 设置卡牌位置
-				cardView->setPosition(cardModel->getPosition());
-				
+
+				// 设置卡牌位置，加上200的垂直偏移量，让所有卡牌往上移动
+				cardView->setPosition(cardModel->getPosition() + cocos2d::Vec2(0, 200));
+
 				// 翻转卡牌显示正面
 				cardView->setFlipped(true);
 			}
@@ -72,13 +74,13 @@ bool PlayFieldController::handleCardClick(int cardId) {
 		return false;
 	}
 
-	// 璁板綍鎾ら攢鎿嶄綔
+	// 记录撤销操作
 	if (_undoManager) {
 		UndoModel undoAction;
 		undoAction.setActionType("moveCard");
 		undoAction.setCardId(cardId);
 
-		// 鑾峰彇鍗＄墝褰撳墠浣嶇疆
+		// 获取卡牌当前位置
 		CardModel* card = _playFieldManager->getCardById(cardId);
 		if (card) {
 			undoAction.setFromPosition(card->getPosition());
@@ -87,20 +89,35 @@ bool PlayFieldController::handleCardClick(int cardId) {
 		_undoManager->recordUndoAction(undoAction);
 	}
 
-	// 鎵ц鍗＄墝鍖归厤
+	// 执行卡牌匹配
 	bool result = _playFieldManager->matchCard(cardId);
 
-	// 鏇存柊瑙嗗浘
-	if (_playFieldView && result) {
-		// 绉婚櫎鍖归厤鎴愬姛鐨勫崱鐗岃鍥?
+	// 更新视图
+	if (_playFieldView) {
+		// 移除匹配成功添加到底牌堆的卡牌
 		_playFieldView->removeCardViewByCardId(cardId);
 
-		// 鏇存柊娓告垙鐘舵€?
+		// 更新游戏状态
 		if (_gameModel->getGameState() == GameModel::GAME_STATE_WIN ||
 			_gameModel->getGameState() == GameModel::GAME_STATE_LOSE) {
-			// 娓告垙缁撴潫锛屾墽琛岀浉搴旀搷浣?
+			// 游戏结束，执行相应操作
 		}
 	}
+
+	// 更新底牌显示
+	if (_stackView) {
+		// 获取最新的底牌
+		CardModel* currentTrayCard = _gameModel->getTrayCard();
+		if (currentTrayCard) {
+			// 创建新的CardView来显示底牌
+			auto cardView = CardView::create(currentTrayCard);
+			if (cardView) {
+				// 设置底牌
+				_stackView->setTrayCard(cardView);
+			}
+		}
+	}
+
 	return result;
 }
 
@@ -114,16 +131,30 @@ bool PlayFieldController::replaceTrayWithPlayFieldCard(int cardId) {
 		return false;
 	}
 
-	// 鏇挎崲搴曠墝
+	// 替换底牌
 	bool result = _cardStackManager->replaceTrayCard(card);
 
-	// 濡傛灉鏇挎崲鎴愬姛锛岀Щ闄や富鐗屽尯鐨勫崱鐗?
+	// 如果替换成功，移除主牌区的卡牌
 	if (result) {
 		_playFieldManager->removeCard(cardId);
 
-		// 鏇存柊瑙嗗浘
+		// 更新视图
 		if (_playFieldView) {
 			_playFieldView->removeCardViewByCardId(cardId);
+		}
+
+		// 更新底牌显示
+		if (_stackView) {
+			// 获取最新的底牌
+			CardModel* currentTrayCard = _gameModel->getTrayCard();
+			if (currentTrayCard) {
+				// 创建新的CardView来显示底牌
+				auto cardView = CardView::create(currentTrayCard);
+				if (cardView) {
+					// 设置底牌
+					_stackView->setTrayCard(cardView);
+				}
+			}
 		}
 	}
 
@@ -135,7 +166,76 @@ bool PlayFieldController::replaceTrayWithStackCard() {
 		return false;
 	}
 
-	return _cardStackManager->replaceTrayFromStack();
+	bool result = _cardStackManager->replaceTrayFromStack();
+
+	// 更新底牌显示
+	if (result && _stackView) {
+		// 获取最新的底牌
+		CardModel* currentTrayCard = _gameModel->getTrayCard();
+		if (currentTrayCard) {
+			// 创建新的CardView来显示底牌
+			auto cardView = CardView::create(currentTrayCard);
+			if (cardView) {
+				// 设置底牌
+				_stackView->setTrayCard(cardView);
+			}
+		}
+	}
+
+	return result;
+}
+
+void PlayFieldController::reinitUI() {
+	// 先销毁现有的PlayFieldManager和CardStackManager
+	if (_playFieldManager) {
+		delete _playFieldManager;
+		_playFieldManager = nullptr;
+	}
+
+	if (_cardStackManager) {
+		delete _cardStackManager;
+		_cardStackManager = nullptr;
+	}
+
+	// 重新初始化
+	init();
+
+	// 根据GameModel的最新数据重新创建主牌区卡牌
+	if (_playFieldView) {
+		// 清空现有的卡牌视图
+		_playFieldView->clearAllCardViews();
+		
+		// 获取GameModel中的最新主牌区卡牌
+		const auto& playfieldCards = _gameModel->getPlayfieldCards();
+		for (const auto& cardModel : playfieldCards) {
+			// 创建卡牌视图
+			auto cardView = CardView::create(cardModel.get());
+			if (cardView) {
+				// 将卡牌视图添加到游戏区域视图中
+				_playFieldView->addCardView(cardView);
+
+				// 设置卡牌位置，加上200的垂直偏移量，让所有卡牌往上移动
+				cardView->setPosition(cardModel->getPosition() + cocos2d::Vec2(0, 200));
+
+				// 翻转卡牌显示正面
+				cardView->setFlipped(true);
+			}
+		}
+	}
+
+	// 更新底牌显示
+	if (_stackView) {
+		// 获取最新的底牌
+		CardModel* currentTrayCard = _gameModel->getTrayCard();
+		if (currentTrayCard) {
+			// 创建新的CardView来显示底牌
+			auto cardView = CardView::create(currentTrayCard);
+			if (cardView) {
+				// 设置底牌
+				_stackView->setTrayCard(cardView);
+			}
+		}
+	}
 }
 
 void PlayFieldController::setUndoManager(UndoManager* undoManager) {
@@ -149,5 +249,7 @@ bool PlayFieldController::canMoveCard(int cardId) const {
 
 	return _playFieldManager->canMatchCard(cardId);
 }
+
+
 
 

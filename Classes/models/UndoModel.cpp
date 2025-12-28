@@ -1,4 +1,4 @@
-﻿#include "UndoModel.h"
+#include "UndoModel.h"
 
 USING_NS_CC;
 
@@ -95,6 +95,5 @@ void UndoModel::setNewStackCardCount(int stackCardCount) {
 
 int UndoModel::getNewStackCardCount() const {
     return _newStackCardCount;
-}
-
+}  
 

@@ -10,7 +10,6 @@ F:\CocosProject\CardGameHouse\CardGame\Classes\HelloWorldScene.cpp;F:\CocosProje
 F:\CocosProject\CardGameHouse\CardGame\Classes\managers\CardStackManager.cpp;F:\CocosProject\CardGameHouse\CardGame\proj.win32\Debug.win32\CardStackManager.obj
 F:\CocosProject\CardGameHouse\CardGame\Classes\managers\PlayFieldManager.cpp;F:\CocosProject\CardGameHouse\CardGame\proj.win32\Debug.win32\PlayFieldManager.obj
 F:\CocosProject\CardGameHouse\CardGame\Classes\managers\UndoManager.cpp;F:\CocosProject\CardGameHouse\CardGame\proj.win32\Debug.win32\UndoManager.obj
-F:\CocosProject\CardGameHouse\CardGame\Classes\models\CardEnums.cpp;F:\CocosProject\CardGameHouse\CardGame\proj.win32\Debug.win32\CardEnums.obj
 F:\CocosProject\CardGameHouse\CardGame\Classes\models\CardModel.cpp;F:\CocosProject\CardGameHouse\CardGame\proj.win32\Debug.win32\CardModel.obj
 F:\CocosProject\CardGameHouse\CardGame\Classes\models\GameModel.cpp;F:\CocosProject\CardGameHouse\CardGame\proj.win32\Debug.win32\GameModel.obj
 F:\CocosProject\CardGameHouse\CardGame\Classes\models\UndoModel.cpp;F:\CocosProject\CardGameHouse\CardGame\proj.win32\Debug.win32\UndoModel.obj

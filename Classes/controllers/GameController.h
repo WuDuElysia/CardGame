@@ -1,4 +1,4 @@
-﻿#ifndef GAME_CONTROLLER_H
+#ifndef GAME_CONTROLLER_H
 #define GAME_CONTROLLER_H
 
 #include "models/GameModel.h"
@@ -101,14 +101,16 @@ private:
 	 */
 	bool loadLevel(int levelId);
 
-	GameModel* _gameModel;                  // 游戏模型
-	GameView* _gameView;                    // 游戏视图
-	PlayFieldController* _playFieldController;  // 主牌区控制器
-	StackController* _stackController;      // 牌堆控制器
-	UndoManager* _undoManager;              // 撤销管理器
-	int _currentLevelId;                    // 当前关卡ID
-	int _score;                             // 当前分数
-	int _moveCount;                         // 当前步数
+	GameModel* _gameModel;                  ///< 游戏模型
+	GameView* _gameView;                    ///< 游戏视图
+	PlayFieldController* _playFieldController;  ///< 主牌区控制器
+	StackController* _stackController;      ///< 牌堆控制器
+	UndoManager* _undoManager;              ///< 撤销管理器
+	int _currentLevelId;                    ///< 当前关卡ID
+	int _score;                             ///< 当前分数
+	int _moveCount;                         ///< 当前步数
 };
 
 #endif // GAME_CONTROLLER_H
+
+
