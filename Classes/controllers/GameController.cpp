@@ -255,7 +255,8 @@ bool GameController::undo() {
 						}
 
 						// 获取备用牌堆顶部位置（相对于StackView的坐标）
-						cocos2d::Vec2 stackTopPosition = cocos2d::Vec2(-50, 0); // 假设备用牌堆顶部在StackView的相对坐标(-50, 0)
+						// 计算备用牌堆顶部的准确位置，基于当前牌堆大小
+						cocos2d::Vec2 stackTopPosition = cocos2d::Vec2(stackView->getStackCardCount() * 2.0f, -stackView->getStackCardCount() * 2.0f);
 
 						// 执行移动动画：从底牌位置移动到备用牌堆位置
 						stackView->moveCardToTargetWithAnimation(currentTrayCardView, stackTopPosition, 0.5f, [this, currentTrayCardView, stackView]() {

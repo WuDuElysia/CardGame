@@ -106,10 +106,11 @@ CardView* StackView::removeTopStackCard() {
 	CardView* topCard = _stackCardViews.back();
 	_stackCardViews.pop_back();
 
-	// 从父节点移除
-	if (topCard->getParent() == this) {
-		topCard->removeFromParent();
-	}
+	// 增加引用计数，确保在返回前不会被释放
+	topCard->retain();
+
+	// 不再立即从父节点移除，以便动画能够在原地执行
+	// 移除操作将在动画完成后由调用者处理
 
 	updateStackDisplay();
 
