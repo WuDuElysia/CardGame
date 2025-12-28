@@ -92,10 +92,26 @@ public:
 	void setTrayPosition(const cocos2d::Vec2& position);
 
 	/**
+	 * @brief 获取底牌位置
+	 * @return 底牌位置
+	 */
+	cocos2d::Vec2 getTrayPosition() const;
+
+	/**
 	 * @brief 清空所有牌堆卡牌
 	 * @details 用于重新初始化时清空现有卡牌
 	 */
 	void clearAllStackCards();
+
+	/**
+	 * @brief 执行卡牌移动到目标位置的动画
+	 * @param cardView 要移动的卡牌视图
+	 * @param targetPos 目标位置
+	 * @param duration 动画持续时间（秒）
+	 * @param callback 动画完成后的回调函数
+	 */
+	void moveCardToTargetWithAnimation(CardView* cardView, const cocos2d::Vec2& targetPos, 
+									  float duration = 0.5f, const std::function<void()>& callback = nullptr);
 
 private:
 	/**

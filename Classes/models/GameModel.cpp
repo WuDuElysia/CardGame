@@ -97,6 +97,9 @@ bool GameModel::moveTrayCardToPlayfield(int cardId) {
     auto cardPtr = std::move(it->second);
     CardModel* card = cardPtr.get();
 
+    // 从trayCardMap中移除该条目
+    _trayCardMap.erase(it);
+
     // 从底牌堆向量中移除
     auto vecIter = std::find_if(_trayCards.begin(), _trayCards.end(), 
         [cardId](const std::shared_ptr<CardModel>& c) { 
@@ -200,18 +203,28 @@ bool GameModel::matchCard(CardModel* card) {
 	// 移动智能指针所有权，避免removePlayfieldCard释放
 	auto cardPtr = std::move(it->second);
 
-	// 浠庢父鎴忓尯鍩熺Щ闄よ鐗?
-	removePlayfieldCard(cardId);
+	// 从playfieldCardMap中移除该条目
+	_playfieldCardMap.erase(it);
 
-	// 鏇存柊搴曠墝锛屽皢褰撳墠鍗＄墝娣诲姞鍒板簳鐗屽爢
+	// 从playfieldCards向量中移除
+	auto vecIter = std::find_if(_playfieldCards.begin(), _playfieldCards.end(), 
+		[cardId](const std::shared_ptr<CardModel>& c) { 
+			return c->getCardId() == cardId; 
+		});
+	
+	if (vecIter != _playfieldCards.end()) {
+		_playfieldCards.erase(vecIter);
+	}
+
+	// 移动到底牌堆
 	_trayCards.push_back(std::move(cardPtr));
 	_trayCardMap[cardId] = _trayCards.back();
 
-	// 澧炲姞鍒嗘暟鍜屾鏁?
+	// 增加分数和步数
 	_score += 10;
 	incrementMoveCount();
 
-	// 妫€鏌ユ父鎴忕姸鎬?
+	// 检查游戏状态
 	if (checkWinCondition()) {
 		setGameState(GAME_STATE_WIN);
 	}

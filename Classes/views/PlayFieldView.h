@@ -1,4 +1,4 @@
-﻿#ifndef PLAY_FIELD_VIEW_H
+#ifndef PLAY_FIELD_VIEW_H
 #define PLAY_FIELD_VIEW_H
 
 #include "cocos2d.h"
@@ -126,6 +126,16 @@ public:
 	 * @param callback 卡牌点击回调函数
 	 */
 	void setCardClickCallback(const OnCardClickCallback& callback);
+
+	/**
+	 * @brief 执行卡牌移动到目标位置的动画
+	 * @param cardView 要移动的卡牌视图
+	 * @param targetPos 目标位置
+	 * @param duration 动画持续时间（秒）
+	 * @param callback 动画完成后的回调函数
+	 */
+	void moveCardToTargetWithAnimation(CardView* cardView, const cocos2d::Vec2& targetPos, 
+									  float duration = 0.5f, const std::function<void()>& callback = nullptr);
 
 private:
 	// 事件处理

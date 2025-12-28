@@ -94,26 +94,71 @@ bool PlayFieldController::handleCardClick(int cardId) {
 
 	// 更新视图
 	if (_playFieldView) {
-		// 移除匹配成功添加到底牌堆的卡牌
-		_playFieldView->removeCardViewByCardId(cardId);
+		// 获取要移动的卡牌视图
+		CardView* cardView = _playFieldView->getCardViewByCardId(cardId);
+		if (cardView && _stackView) {
+			// 获取底牌位置（在StackView中的位置）
+			cocos2d::Vec2 trayPosition = _stackView->getTrayPosition();
+			// 将StackView的底牌位置转换为PlayFieldView的坐标系
+			cocos2d::Vec2 globalTrayPosition = _stackView->convertToWorldSpace(trayPosition);
+			cocos2d::Vec2 localTrayPosition = _playFieldView->convertToNodeSpace(globalTrayPosition);
+			// 底牌动画位置向下偏移200像素
+			cocos2d::Vec2 animatedTrayPosition = localTrayPosition + cocos2d::Vec2(0, 0);
+			
+			// 执行卡牌移动动画
+			_playFieldView->moveCardToTargetWithAnimation(cardView, animatedTrayPosition, 0.5f, [this, cardId]() {
+				// 动画完成后，从主牌区移除卡牌
+				if (_playFieldView) {
+					_playFieldView->removeCardViewByCardId(cardId);
+				}
+				
+				// 更新底牌显示
+				if (_stackView) {
+					// 获取最新的底牌
+					CardModel* currentTrayCard = _gameModel->getTrayCard();
+					if (currentTrayCard) {
+						// 创建新的CardView来显示底牌
+						auto newCardView = CardView::create(currentTrayCard);
+						if (newCardView) {
+							// 设置底牌
+							_stackView->setTrayCard(newCardView);
+						}
+					}
+				}
+				
+				// 更新游戏状态
+				if (_gameModel->getGameState() == GameModel::GAME_STATE_WIN ||
+					_gameModel->getGameState() == GameModel::GAME_STATE_LOSE) {
+					// 游戏结束，执行相应操作
+				}
+				
+				//// 通知游戏模型状态已更改
+				//if (_gameModel) {
+				//	_gameModel->notifyStateChanged();
+				//}
+			});
+		} else {
+			// 如果动画不可用，直接移除卡牌并更新视图
+			_playFieldView->removeCardViewByCardId(cardId);
 
-		// 更新游戏状态
-		if (_gameModel->getGameState() == GameModel::GAME_STATE_WIN ||
-			_gameModel->getGameState() == GameModel::GAME_STATE_LOSE) {
-			// 游戏结束，执行相应操作
-		}
-	}
+			// 更新游戏状态
+			if (_gameModel->getGameState() == GameModel::GAME_STATE_WIN ||
+				_gameModel->getGameState() == GameModel::GAME_STATE_LOSE) {
+				// 游戏结束，执行相应操作
+			}
 
-	// 更新底牌显示
-	if (_stackView) {
-		// 获取最新的底牌
-		CardModel* currentTrayCard = _gameModel->getTrayCard();
-		if (currentTrayCard) {
-			// 创建新的CardView来显示底牌
-			auto cardView = CardView::create(currentTrayCard);
-			if (cardView) {
-				// 设置底牌
-				_stackView->setTrayCard(cardView);
+			// 更新底牌显示
+			if (_stackView) {
+				// 获取最新的底牌
+				CardModel* currentTrayCard = _gameModel->getTrayCard();
+				if (currentTrayCard) {
+					// 创建新的CardView来显示底牌
+					auto cardView = CardView::create(currentTrayCard);
+					if (cardView) {
+						// 设置底牌
+						_stackView->setTrayCard(cardView);
+					}
+				}
 			}
 		}
 	}
@@ -134,25 +179,82 @@ bool PlayFieldController::replaceTrayWithPlayFieldCard(int cardId) {
 	// 替换底牌
 	bool result = _cardStackManager->replaceTrayCard(card);
 
-	// 如果替换成功，移除主牌区的卡牌
+	// 如果替换成功，更新视图
 	if (result) {
 		_playFieldManager->removeCard(cardId);
 
 		// 更新视图
-		if (_playFieldView) {
-			_playFieldView->removeCardViewByCardId(cardId);
-		}
+		if (_playFieldView && _stackView) {
+			// 获取要移动的卡牌视图
+			CardView* cardView = _playFieldView->getCardViewByCardId(cardId);
+			if (cardView) {
+				// 获取底牌位置（在StackView中的位置）
+				cocos2d::Vec2 trayPosition = _stackView->getTrayPosition();
+				// 将StackView的底牌位置转换为PlayFieldView的坐标系
+				cocos2d::Vec2 globalTrayPosition = _stackView->convertToWorldSpace(trayPosition);
+				cocos2d::Vec2 localTrayPosition = _playFieldView->convertToNodeSpace(globalTrayPosition);
+				// 底牌动画位置向下偏移200像素
+				cocos2d::Vec2 animatedTrayPosition = localTrayPosition + cocos2d::Vec2(0, -200);
+				
+				// 执行卡牌移动动画
+				_playFieldView->moveCardToTargetWithAnimation(cardView, animatedTrayPosition, 0.5f, [this, cardId]() {
+					// 动画完成后，从主牌区移除卡牌
+					if (_playFieldView) {
+						_playFieldView->removeCardViewByCardId(cardId);
+					}
 
-		// 更新底牌显示
-		if (_stackView) {
-			// 获取最新的底牌
-			CardModel* currentTrayCard = _gameModel->getTrayCard();
-			if (currentTrayCard) {
-				// 创建新的CardView来显示底牌
-				auto cardView = CardView::create(currentTrayCard);
-				if (cardView) {
-					// 设置底牌
-					_stackView->setTrayCard(cardView);
+					// 更新底牌显示
+					if (_stackView) {
+						// 获取最新的底牌
+						CardModel* currentTrayCard = _gameModel->getTrayCard();
+						if (currentTrayCard) {
+							// 创建新的CardView来显示底牌
+							auto newCardView = CardView::create(currentTrayCard);
+							if (newCardView) {
+								// 设置底牌
+								_stackView->setTrayCard(newCardView);
+							}
+						}
+					}
+					
+					//// 通知游戏模型状态已更改
+					//if (_gameModel) {
+					//	_gameModel->notifyStateChanged();
+					//}
+				});
+			} else {
+				// 如果动画不可用，直接更新视图
+				_playFieldView->removeCardViewByCardId(cardId);
+
+				// 更新底牌显示
+				if (_stackView) {
+					// 获取最新的底牌
+					CardModel* currentTrayCard = _gameModel->getTrayCard();
+					if (currentTrayCard) {
+						// 创建新的CardView来显示底牌
+						auto cardView = CardView::create(currentTrayCard);
+						if (cardView) {
+							// 设置底牌
+							_stackView->setTrayCard(cardView);
+						}
+					}
+				}
+			}
+		} else if (_playFieldView) {
+			// 如果stackView不可用，直接更新视图
+			_playFieldView->removeCardViewByCardId(cardId);
+
+			// 更新底牌显示
+			if (_stackView) {
+				// 获取最新的底牌
+				CardModel* currentTrayCard = _gameModel->getTrayCard();
+				if (currentTrayCard) {
+					// 创建新的CardView来显示底牌
+					auto cardView = CardView::create(currentTrayCard);
+					if (cardView) {
+						// 设置底牌
+						_stackView->setTrayCard(cardView);
+					}
 				}
 			}
 		}

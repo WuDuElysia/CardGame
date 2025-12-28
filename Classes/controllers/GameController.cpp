@@ -1,4 +1,4 @@
-﻿#include "GameController.h"
+#include "GameController.h"
 #include "configs/loaders/LevelConfigLoader.h"
 #include "services/CardMatchingService.h"
 
@@ -50,6 +50,69 @@ bool GameController::init() {
 	}
 
 	return true;
+}
+
+void GameController::moveCardAnimation(CardView* cardView, cocos2d::Node* fromView, cocos2d::Node* toView,
+	const cocos2d::Vec2& targetPos, float duration,
+	const std::function<void()>& callback) {
+	if (!cardView) return;
+
+	// 从起始视图中移除卡牌
+	if (cardView->getParent() == fromView) {
+		cardView->retain(); // 保留引用，防止被删除
+		fromView->removeChild(cardView);
+	}
+
+	// 将卡牌添加到场景中，确保动画期间不会被删除
+	cocos2d::Node* scene = fromView->getParent();
+	if (scene) {
+		scene->addChild(cardView);
+	}
+
+	// 执行移动动画
+	auto moveTo = cocos2d::MoveTo::create(duration, targetPos);
+
+	// 如果提供了回调函数，则在动画完成后执行
+	if (callback) {
+		auto callFunc = cocos2d::CallFunc::create([this, cardView, toView, callback]() {
+			// 动画完成后，将卡牌添加到目标视图
+			if (cardView && toView) {
+				// 将卡牌添加到目标视图
+				toView->addChild(cardView);
+				cardView->release(); // 释放之前保留的引用
+				callback();
+			}
+			});
+		auto sequence = cocos2d::Sequence::create(moveTo, callFunc, nullptr);
+		cardView->runAction(sequence);
+	}
+	else {
+		cardView->runAction(moveTo);
+	}
+}
+
+void GameController::moveCardUndoAnimation(CardView* cardView, const cocos2d::Vec2& fromPos,
+	const cocos2d::Vec2& toPos, float duration,
+	const std::function<void()>& callback) {
+	if (!cardView) return;
+
+	// 设置卡牌的起始位置
+	cardView->setPosition(fromPos);
+
+	// 执行移动动画
+	auto moveTo = cocos2d::MoveTo::create(duration, toPos);
+
+	// 如果提供了回调函数，则在动画完成后执行
+	if (callback) {
+		auto callFunc = cocos2d::CallFunc::create([callback]() {
+			callback();
+			});
+		auto sequence = cocos2d::Sequence::create(moveTo, callFunc, nullptr);
+		cardView->runAction(sequence);
+	}
+	else {
+		cardView->runAction(moveTo);
+	}
 }
 
 bool GameController::startGame(int levelId) {
@@ -111,10 +174,115 @@ bool GameController::undo() {
 		return false;
 	}
 
+	// 获取撤销操作的详细信息
+	UndoModel lastAction = _undoManager->getLastUndoAction(); // 复制而不是引用，避免在执行undo后引用失效
+
+	// 在执行撤销前，先获取需要动画的卡牌视图
+	CardView* trayCardView = nullptr;
+	int cardId = -1;
+	cocos2d::Vec2 originalPosition = cocos2d::Vec2(0, 0);
+	bool needsAnimation = false;
+
+	if (lastAction.getActionType() == "moveCard") {
+		cardId = lastAction.getCardId();
+		originalPosition = lastAction.getFromPosition();
+
+		// 获取当前在底牌区的卡牌视图（在执行撤销操作前）
+		if (_stackController && _playFieldController && _gameView) {
+			StackView* stackView = _gameView->getStackView();
+			if (stackView) {
+				trayCardView = stackView->getCurrentTrayCard();
+				needsAnimation = (trayCardView && trayCardView->getCardModel() && trayCardView->getCardModel()->getCardId() == cardId);
+			}
+		}
+	}
+
+	// 执行撤销操作
 	bool result = _undoManager->undo();
 
 	// 重新初始化UI，根据GameModel的最新数据
 	if (result) {
+		// 根据撤销操作类型执行相应的动画
+		if (lastAction.getActionType() == "moveCard" && needsAnimation && trayCardView) {
+			// 这是主牌区到备用牌区的撤销操作，需要动画
+			// 获取当前StackView
+			if (_stackController && _playFieldController && _gameView) {
+				StackView* stackView = _gameView->getStackView();
+				PlayFieldView* playFieldView = _gameView->getPlayFieldView();
+
+				if (stackView && playFieldView) {
+					// 获取底牌的当前位置（全局坐标）
+					cocos2d::Vec2 currentTrayPosition = stackView->convertToWorldSpace(trayCardView->getPosition());
+					// 获取原始位置（全局坐标）
+					cocos2d::Vec2 targetOriginalPosition = playFieldView->convertToWorldSpace(originalPosition);
+
+					// 执行反向移动动画：从底牌位置移动到原位置
+					moveCardUndoAnimation(trayCardView, currentTrayPosition, targetOriginalPosition, 0.5f, [this, cardId]() {
+						// 动画完成后，不要直接操作原来的trayCardView
+						// 因为在执行undo()时，卡牌模型已经从底牌堆移动到主牌区
+						// 而reinitUI()会重新创建所有卡牌视图
+						
+						// 直接重新初始化UI以确保状态一致
+						if (_playFieldController) {
+							_playFieldController->reinitUI();
+						}
+						if (_stackController) {
+							_stackController->reinitUI();
+						}
+
+						// 更新游戏UI
+						if (_gameView) {
+							_gameView->updateGameUI();
+						}
+						});
+					return result; // 已经处理了动画，直接返回
+				}
+			}
+		}
+		else if (lastAction.getActionType() == "replaceTray") {
+			// 这是备用牌区到备用牌区的撤销操作，需要动画
+			// 获取当前StackView
+			if (_stackController && _gameView) {
+				StackView* stackView = _gameView->getStackView();
+				if (stackView) {
+					// 获取当前底牌（即将被移除的牌）
+					CardView* currentTrayCardView = stackView->getCurrentTrayCard();
+					if (currentTrayCardView) {
+						// 从StackView中移除当前底牌，准备动画
+						if (currentTrayCardView->getParent() == stackView) {
+							currentTrayCardView->retain(); // 保留引用
+							stackView->removeChild(currentTrayCardView); // 从StackView中移除底牌
+						}
+
+						// 获取备用牌堆顶部位置（相对于StackView的坐标）
+						cocos2d::Vec2 stackTopPosition = cocos2d::Vec2(-50, 0); // 假设备用牌堆顶部在StackView的相对坐标(-50, 0)
+
+						// 执行移动动画：从底牌位置移动到备用牌堆位置
+						stackView->moveCardToTargetWithAnimation(currentTrayCardView, stackTopPosition, 0.5f, [this, currentTrayCardView, stackView]() {
+							// 动画完成后，将卡牌添加到备用牌堆视图
+							if (currentTrayCardView && stackView) {
+								// 添加回备用牌堆
+								stackView->addStackCard(currentTrayCardView);
+								currentTrayCardView->release(); // 释放引用
+
+								// 重新初始化UI以确保状态一致
+								if (_stackController) {
+									_stackController->reinitUI();
+								}
+
+								// 更新游戏UI
+								if (_gameView) {
+									_gameView->updateGameUI();
+								}
+							}
+							});
+						return result; // 已经处理了动画，直接返回
+					}
+				}
+			}
+		}
+
+		// 如果没有特殊动画处理，或者动画不适用，则直接重新初始化UI
 		// 重新初始化主牌区UI
 		if (_playFieldController) {
 			_playFieldController->reinitUI();

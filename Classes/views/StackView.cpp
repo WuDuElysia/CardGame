@@ -128,6 +128,7 @@ void StackView::setTrayCard(CardView* cardView) {
 	// 设置新底牌
 	_currentTrayCard = cardView;
 	// 使用固定的底牌位置，而不是卡牌模型中的原始位置
+	// 如果卡牌是从其他位置移动过来的（带有动画），需要调整到正确位置
 	cardView->setPosition(_trayPosition);
 	// 显示卡牌正面
 	cardView->setFlipped(true);
@@ -205,6 +206,31 @@ void StackView::setTrayPosition(const Vec2& position) {
 	if (_currentTrayCard) {
 		// 直接使用trayPosition作为底牌位置，不再使用卡牌模型中的原始位置
 		_currentTrayCard->setPosition(position);
+	}
+}
+
+cocos2d::Vec2 StackView::getTrayPosition() const {
+	return _trayPosition;
+}
+
+void StackView::moveCardToTargetWithAnimation(CardView* cardView, const Vec2& targetPos, 
+												float duration, const std::function<void()>& callback) {
+	if (!cardView) return;
+
+	// 创建移动动画
+	auto moveTo = MoveTo::create(duration, targetPos);
+	
+	// 如果提供了回调函数，则在动画完成后执行
+	if (callback) {
+		auto callFunc = CallFunc::create([this, cardView, callback]() {
+			// 动画完成后，不设置位置，因为卡牌可能被移动到其他父节点
+			// 位置应该由调用者在回调中设置
+			callback();
+		});
+		auto sequence = Sequence::create(moveTo, callFunc, nullptr);
+		cardView->runAction(sequence);
+	} else {
+		cardView->runAction(moveTo);
 	}
 }
 

@@ -104,6 +104,25 @@ void PlayFieldView::moveCardToPosition(CardView* cardView, const Vec2& position,
 	cardView->runAction(moveTo);
 }
 
+void PlayFieldView::moveCardToTargetWithAnimation(CardView* cardView, const Vec2& targetPos, 
+												float duration, const std::function<void()>& callback) {
+	if (!cardView) return;
+
+	// 创建移动动画
+	auto moveTo = MoveTo::create(duration, targetPos);
+	
+	// 如果提供了回调函数，则在动画完成后执行
+	if (callback) {
+		auto callFunc = CallFunc::create([callback]() {
+			callback();
+		});
+		auto sequence = Sequence::create(moveTo, callFunc, nullptr);
+		cardView->runAction(sequence);
+	} else {
+		cardView->runAction(moveTo);
+	}
+}
+
 void PlayFieldView::flipCard(CardView* cardView, float duration) {
 	if (!cardView) return;
 

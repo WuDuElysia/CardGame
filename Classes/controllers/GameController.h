@@ -81,6 +81,31 @@ public:
 	 */
 	UndoManager* getUndoManager() const;
 
+	/**
+	 * @brief 执行卡牌移动动画
+	 * @param cardView 要移动的卡牌视图
+	 * @param fromView 起始视图（PlayFieldView或StackView）
+	 * @param toView 目标视图（PlayFieldView或StackView）
+	 * @param targetPos 目标位置
+	 * @param duration 动画持续时间（秒）
+	 * @param callback 动画完成后的回调函数
+	 */
+	void moveCardAnimation(CardView* cardView, cocos2d::Node* fromView, cocos2d::Node* toView,
+		const cocos2d::Vec2& targetPos, float duration = 0.5f,
+		const std::function<void()>& callback = nullptr);
+
+	/**
+	 * @brief 执行卡牌撤销动画
+	 * @param cardView 要移动的卡牌视图
+	 * @param fromPos 起始位置
+	 * @param toPos 目标位置
+	 * @param duration 动画持续时间（秒）
+	 * @param callback 动画完成后的回调函数
+	 */
+	void moveCardUndoAnimation(CardView* cardView, const cocos2d::Vec2& fromPos,
+		const cocos2d::Vec2& toPos, float duration = 0.5f,
+		const std::function<void()>& callback = nullptr);
+
 private:
 	/**
 	 * @brief 初始化子控制器

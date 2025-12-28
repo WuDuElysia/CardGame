@@ -188,6 +188,21 @@ void CardView::updateCardDisplay() {
         }
 }
 
+void CardView::moveCardToPosition(const cocos2d::Vec2& targetPos, float duration, 
+                                  const std::function<void()>& callback) {
+    // 创建移动动画
+    auto moveToAction = cocos2d::MoveTo::create(duration, targetPos);
+    
+    // 如果提供了回调函数，则在动画完成后执行
+    if (callback) {
+        auto callFunc = cocos2d::CallFunc::create(callback);
+        auto sequence = cocos2d::Sequence::create(moveToAction, callFunc, nullptr);
+        this->runAction(sequence);
+    } else {
+        this->runAction(moveToAction);
+    }
+}
+
 
 
 

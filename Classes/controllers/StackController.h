@@ -1,4 +1,4 @@
-﻿#ifndef STACK_CONTROLLER_H
+#ifndef STACK_CONTROLLER_H
 #define STACK_CONTROLLER_H
 
 #include "models/GameModel.h"

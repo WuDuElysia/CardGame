@@ -1,4 +1,4 @@
-﻿#ifndef UNDO_MANAGER_H
+#ifndef UNDO_MANAGER_H
 #define UNDO_MANAGER_H
 
 #include <vector>
@@ -70,6 +70,12 @@ public:
      * @return 最大撤销步数
      */
     int getMaxUndoSteps() const;
+
+    /**
+     * @brief 获取最后一个撤销操作
+     * @return 最后一个撤销操作的引用
+     */
+    UndoModel& getLastUndoAction();
 
 private:
     GameModel* _gameModel;             ///< 游戏数据模型指针

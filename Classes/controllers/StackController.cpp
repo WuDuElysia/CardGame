@@ -100,14 +100,12 @@ bool StackController::handleStackClick() {
 		_undoManager->recordUndoAction(undoAction);
 	}
 
-	// 浠庡鐢ㄧ墝鍫嗘娊鍙栧崱鐗屾浛鎹㈠簳鐗?
+	// 从备用牌堆抽取卡牌替换底牌
 	bool result = replaceTrayWithStackCard();
 	
-	// 鏇存柊瑙嗗浘
+	// 更新视图
 	if (_stackView && result) {
-		// 从StackView中移除顶部卡牌
-		_stackView->removeTopStackCard();
-		
+		// 直接更新视图，禁用动画以避免同步问题
 		_stackView->playDrawCardAnimation();
 		_stackView->updateStackDisplay();
 		

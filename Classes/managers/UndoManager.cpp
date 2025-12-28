@@ -55,10 +55,11 @@ bool UndoManager::undo() {
 		// 获取当前底牌
 		const auto& trayCards = _gameModel->getTrayCards();
 		if (!trayCards.empty()) {
-			// 从底牌堆移除当前底牌
+			// 从底牌堆移除当前底牌（栈顶元素）
 			int currentTrayCardId = trayCards.back()->getCardId();
 			CardModel* currentTrayCard = _gameModel->getTrayCardById(currentTrayCardId);
 			if (currentTrayCard) {
+				// 从底牌堆移除当前底牌
 				_gameModel->removeTrayCard(currentTrayCardId);
 
 				// 将当前底牌添加回牌堆
@@ -69,8 +70,15 @@ bool UndoManager::undo() {
 		// 如果之前有底牌，恢复它
 		int oldCardId = undoAction.getCardId();
 		if (oldCardId != -1) {
-			// 这是之前的底牌，应该从某个地方恢复
-			// 注意：这里可能需要更复杂的逻辑来恢复之前的状态
+			// 这是之前的底牌，应该恢复到底牌堆
+			// 从牌堆中找到这张牌并移回底牌堆
+			CardModel* oldTrayCard = _gameModel->getStackCardById(oldCardId);
+			if (oldTrayCard) {
+				// 将牌从牌堆移除
+				_gameModel->removeStackCard(oldCardId);
+				// 将牌添加到底牌堆（作为新的底牌）
+				_gameModel->addTrayCard(oldTrayCard);
+			}
 		}
 	}
 
@@ -97,6 +105,10 @@ void UndoManager::setMaxUndoSteps(int maxSteps) {
 	if (_undoHistory.size() > _maxUndoSteps) {
 		_undoHistory.erase(_undoHistory.begin(), _undoHistory.end() - _maxUndoSteps);
 	}
+}
+
+UndoModel& UndoManager::getLastUndoAction() {
+	return _undoHistory.back();
 }
 
 int UndoManager::getMaxUndoSteps() const {

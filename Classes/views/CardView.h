@@ -1,4 +1,4 @@
-﻿#ifndef CARD_VIEW_H
+#ifndef CARD_VIEW_H
 #define CARD_VIEW_H
 
 #include "cocos2d.h"
@@ -25,13 +25,13 @@ public:
 	 * @return 是否初始化成功
 	 */
 	virtual bool init(CardModel* cardModel);
-	
+
 	/**
 	 * @brief 获取卡牌数据模型
 	 * @return 卡牌数据模型指针
 	 */
 	CardModel* getCardModel() const;
-	
+
 	/**
 	 * @brief 设置卡牌数据模型
 	 * @param cardModel 要设置的卡牌数据模型指针
@@ -43,18 +43,27 @@ public:
 	 * @details 切换卡牌的正反面显示
 	 */
 	void flipCard();
-	
+
 	/**
 	 * @brief 判断卡牌是否已翻转
 	 * @return 卡牌是否已翻转
 	 */
 	bool isFlipped() const;
-	
+
 	/**
 	 * @brief 设置卡牌翻转状态
 	 * @param flipped 要设置的翻转状态
 	 */
 	void setFlipped(bool flipped);
+
+	/**
+	 * @brief 执行卡牌移动动画
+	 * @param targetPos 目标位置
+	 * @param duration 动画持续时间（秒）
+	 * @param callback 动画完成后的回调函数
+	 */
+	void moveCardToPosition(const cocos2d::Vec2& targetPos, float duration,
+		const std::function<void()>& callback = nullptr);
 
 private:
 	/**
@@ -65,7 +74,7 @@ private:
 
 	CardModel* _cardModel;         ///< 卡牌数据模型指针
 	bool _isFlipped;              ///< 卡牌是否已翻转
-	
+
 	// 卡牌组件
 	cocos2d::Sprite* _backgroundSprite;  ///< 卡牌背景精灵
 	cocos2d::Sprite* _numberSprite;      ///< 卡牌数字精灵
